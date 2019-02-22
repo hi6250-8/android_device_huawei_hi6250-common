@@ -17,6 +17,9 @@
 ## Common Path
 COMMON_PATH := device/huawei/hi6250-common
 
+# APEX image
+DEXPREOPT_GENERATE_APEX_IMAGE := true
+
 # Arch
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-a
