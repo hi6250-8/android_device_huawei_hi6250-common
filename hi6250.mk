@@ -35,3 +35,6 @@ PRODUCT_COPY_FILES += \
 # Recovery
 PRODUCT_PACKAGES += \
     init.recovery.hi6250.rc
+
+# Treble
+PRODUCT_USE_VNDK_OVERRIDE := true
