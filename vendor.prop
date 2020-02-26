@@ -5,6 +5,9 @@
 # Bluetooth
 ro.bt.bdaddr_path=/data/misc/bluedroid/macbt
 
+# Fastbootd
+ro.fastbootd.available=true
+
 # Graphics
 ro.hwui.texture_cache_size=72
 ro.hwui.texture_cache_flushrate=0.4
