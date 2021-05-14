@@ -6,7 +6,7 @@ on early-init
 
     # Set the security context for the init process.
     # This should occur before anything else (e.g. ueventd) is started.
-    setcon u:r:init:s0
+#    setcon u:r:init:s0
 
     start ueventd
     start healthd
@@ -80,8 +80,8 @@ on early-boot_hw
     symlink /splash2/fac_log /data/log/fac_log
     symlink /splash2 /log
 
-on cust_parse_action
-    cust_parse
+#on cust_parse_action
+#    cust_parse
 
 #start antenna_fpga download
 on property:sys.system.serv=up
@@ -118,7 +118,7 @@ on property:androidboot.start_services=true
 
 on property:recovery.start_all_srv=true
     #for the reason that init cust policy dirs
-    trigger cust_parse_action
+#    trigger cust_parse_action
 
     # Load properties from /system/ + /factory after fs mount. Place
     # this in another action so that the load will be scheduled after the prior
@@ -126,7 +126,7 @@ on property:recovery.start_all_srv=true
     trigger load_system_props_action
 
     setprop sys.system.serv run
-    load_hwcust_prop_for_recovery
+#    load_hwcust_prop_for_recovery
     start logd
     start atcmdserver
     start hw_ueventd
@@ -351,7 +351,7 @@ on apply_file_decryption
     wait /dev/block/bootdevice/by-name/userdata
     # mount squashfs /dev/block/bootdevice/by-name/system /system wait ro
     # start teecd
-    check_file_encrypt
+#    check_file_encrypt
     setprop vold.crypto_unencrypt_updatedir /data/update
     # start vold
     # installkey /data
@@ -390,5 +390,5 @@ on property:factory.recovery.prepare=start
 on property:vold.status=start
     exec /system/bin/vdc --wait cryptfs enablefilecrypto
     init_user0
-    unlock_user0_key
+#    unlock_user0_key
     setprop vold.status end
