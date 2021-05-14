@@ -1,0 +1,30 @@
+
+service gnss_engine /vendor/bin/gnss_engine_hisi -factory
+    class main
+    user system
+    group system inet root
+    disabled
+
+service agnsscontrol /vendor/bin/gnss_control_hisi -factory
+    class main
+    user system
+    group system inet root
+    disabled
+
+service octty /vendor/bin/octty
+    class core
+    user system
+    group system bluetooth root media
+    disabled
+
+service hisi_bfg_rec /vendor/bin/start_connectivity_hisi recovery
+    class server
+    user root
+    oneshot
+
+on property:setup_hi110x_modules=success
+    start octty
+    write /dev/kmsg "octty has started    "
+    start agnsscontrol
+    write /dev/kmsg "agnsscontrol has started"
+
