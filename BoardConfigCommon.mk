@@ -42,7 +42,7 @@ BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 2
 BOARD_VENDOR_PLATFORM := hi6250
 
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := hihttps://github.com/hi6250-8/android_device_huawei_hi6250-common6250
+TARGET_BOOTLOADER_BOARD_NAME := hi6250
 TARGET_NO_BOOTLOADER := true
 
 # Dexpreopt
@@ -58,6 +58,7 @@ TARGET_USES_HWC2 := true
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
 
 # Kernel
+BOARD_CUSTOM_BOOTIMG_MK := device/huawei/hi6250-common/mkbootimg.mk
 BOARD_KERNEL_BASE := 0x00400000
 BOARD_KERNEL_CMDLINE := loglevel=4 initcall_debug=n page_tracker=on unmovable_isolate1=2:192M,3:224M,4:256M printktimer=0xfff0a000,0x534,0x538
 BOARD_KERNEL_IMAGE_NAME := Image.gz
