@@ -79,9 +79,15 @@ TARGET_PREBUILT_KERNEL := device/huawei/hi6250-common/dummykernel
 # Platform
 TARGET_BOARD_PLATFORM := hi6250
 
+# Partitions
+TARGET_COPY_OUT_VENDOR := vendor
+
 # Recovery
 BOARD_HAS_LARGE_FILESYSTEM := true
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
+
+# Treble
+PRODUCT_FULL_TREBLE_OVERRIDE := true
 
 # VNDK
 BOARD_VNDK_VERSION := current
