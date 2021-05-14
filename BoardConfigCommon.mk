@@ -49,7 +49,8 @@ BOARD_BLUETOOTH_BDROID_BUILDCFG_INCLUDE_DIR := device/huawei/hi6250-common/bluet
 BOARD_VENDOR_PLATFORM := hi6250
 
 # Bootloader
-TARGET_BOOTLOADER_BOARD_NAME := hi6250
+TARGET_BOOTLOADER_BOARD_NAME := hi6250DEVICE_MANIFEST_FILE := device/linaro/hikey/manifest.xml
+DEVICE_MATRIX_FILE := device/linaro/hikey/compatibility_matrix.xml
 TARGET_NO_BOOTLOADER := true
 
 # Dexpreopt
@@ -63,6 +64,10 @@ endif
 # Graphics
 TARGET_USES_HWC2 := true
 NUM_FRAMEBUFFER_SURFACE_BUFFERS := 3
+
+# HIDLs
+DEVICE_MANIFEST_FILE := device/huawei/hi6250-common/manifest.xml
+DEVICE_MATRIX_FILE := device/huawei/hi6250-common/compatibility_matrix.xml
 
 # Kernel
 BOARD_CUSTOM_BOOTIMG_MK := device/huawei/hi6250-common/mkbootimg.mk
