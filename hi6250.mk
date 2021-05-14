@@ -26,6 +26,16 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     libvulkan \
     
+# Kernel
+ifeq ($(TARGET_PREBUILT_KERNEL),)
+LOCAL_KERNEL := device/huawei/hi6250-common/dummykernel
+else
+LOCAL_KERNEL := $(TARGET_PREBUILT_KERNEL)
+endif
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_KERNEL):kernel
+    
 # Net
 PRODUCT_PACKAGES += \
     netutils-wrapper-1.0
