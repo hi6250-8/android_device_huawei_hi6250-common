@@ -17,6 +17,9 @@
 ## Common Path
 COMMON_PATH := device/huawei/hi6250-common
 
+## Inherit common vendor blobs
+$(call inherit-product, vendor/huawei/hi6250-common/hi6250-common-vendor.mk)
+
 # Display
 TARGET_SCREEN_DENSITY := 480
 TARGET_SCREEN_HEIGHT := 1920
