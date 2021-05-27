@@ -163,6 +163,9 @@ PRODUCT_PACKAGES += \
     android.hardware.sensors@1.0-impl \
     android.hardware.sensors@1.0-service
 
+# Soong namespaces
+PRODUCT_SOONG_NAMESPACES += $(COMMON_PATH)
+
 # Thermal
 PRODUCT_PACKAGES += \
     android.hardware.thermal@1.0-impl \
