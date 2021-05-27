@@ -1,0 +1,129 @@
+# Copyright (C) 2008 The Android Open Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# beg: Hisi connectivity
+
+#union image: 110x and bcm
+on early-init
+    setprop ro.connectivity.chiptype "hisi"
+#wifi
+    setprop wifi.interface wlan0
+#gnss
+    setprop is_hisi_connectivity_chip 1
+#ir
+	setprop ro.hardware.consumerir "hisi.hi6250"
+
+# optimize selinux strategy for OTA
+on post-fs-data
+#wifi
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+#platform
+    chmod 660 /dev/ttyAMA3
+    chown system system /dev/ttyAMA3
+
+service octty /vendor/bin/octty
+    class core
+    user system
+    group system bluetooth root media
+    disabled
+
+service oam_hisi /vendor/bin/oam_hisi
+    class main
+    user system
+    group system root wifi bluetooth
+    disabled
+    oneshot
+
+service hisi_bfg /vendor/bin/start_connectivity_hisi
+    class late_start
+    user root
+    group system
+    oneshot
+
+#on property:init.svc.hisi_bfg=stopped
+on property:setup_hi110x_modules=success
+    start octty
+    write /dev/kmsg "octty has started    "
+    start oam_hisi
+    write /dev/kmsg "oam_hisi has started    "
+    start hsgnss
+    write /dev/kmsg "hsgnss has started"
+    start agnsscontrol
+    write /dev/kmsg "agnsscontrol has started"
+    start supl20clientd
+    write /dev/kmsg "sup120clientd has started"
+    start watchlssd
+    write /dev/kmsg "watchlssd has started"
+
+service wpa_supplicant /vendor/bin/wpa_supplicant_hisi \
+    -d \
+    -O/data/misc/wifi/sockets \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0 \
+    -N \
+    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    class late_start
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service p2p_supplicant /vendor/bin/wpa_supplicant_hisi \
+    -iwlan0 -Dnl80211 -c/data/misc/wifi/wpa_supplicant.conf \
+    -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0 \
+    -N \
+    -ip2p0 -Dnl80211 -c/data/misc/wifi/p2p_supplicant.conf -e/data/misc/wifi/entropy.bin -g@android:wpa_wlan0
+    class main
+    socket wpa_wlan0 dgram 660 wifi wifi
+    disabled
+    oneshot
+
+service hostapd /vendor/bin/hostapd_hisi -ddd -e/data/misc/wifi/entropy.bin /data/misc/wifi/hostapd.conf
+    socket wpa_wlan0 dgram 660 wifi wifi
+    class main
+    disabled
+    oneshot
+
+service hsgnss /vendor/bin/gnss_engine_hisi -normal
+    class main
+    user gps
+    group system inet root wakelock
+    disabled
+
+service agnsscontrol /vendor/bin/gnss_control_hisi -normal
+    class main
+    user gps
+    group system inet root wakelock
+    disabled
+
+service supl20clientd /vendor/bin/gnss_supl20clientd_hisi
+    class main
+    user system
+    group system inet
+    disabled
+
+service watchlssd /vendor/bin/gnss_watchlssd_thirdparty
+    class main
+    user gps
+    group system inet net_raw wakelock
+    disabled
+
+#bluetooth
+on property:bluetooth.log.file.create=true
+   mkdir /data/log/bt
+   chown bluetooth bluetooth /data/log/bt
+   chmod 775 /data/log/bt
+
+   setprop bluetooth.log.file.create false
+
+   chown bluetooth bluetooth /dev/hwbt

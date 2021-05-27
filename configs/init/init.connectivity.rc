@@ -1,0 +1,65 @@
+import /vendor/etc/init/connectivity/init.connectivity.${ro.connectivity.chiptype}.rc
+
+on post-fs-data
+	mkdir /data/misc/wifi 0770 wifi wifi
+    chown wifi wifi /data/misc/wifi
+    mkdir /data/misc/wifi/sockets 0770 wifi wifi
+    mkdir /data/misc/wifi/hostapd 0770 wifi wifi
+    chown wifi wifi /data/misc/wifi/p2p_supplicant.conf
+    chown wifi wifi /data/misc/wifi/wpa_supplicant.conf
+    chmod 0660 /data/misc/wifi/p2p_supplicant.conf
+    chmod 0660 /data/misc/wifi/wpa_supplicant.conf
+    chmod 0660 /data/misc/wifi/hostapd.conf
+    chown wifi wifi /data/misc/wifi/hostapd.conf
+	mkdir /data/misc/dhcp 0770 dhcp dhcp
+    chown dhcp dhcp /data/misc/dhcp
+    restorecon  /data/misc/wifi/wpa_supplicant.conf
+    restorecon  /data/misc/wifi/p2p_supplicant.conf
+    restorecon  /data/misc/wifi/entropy.bin
+    restorecon  /data/misc/wifi/hostapd.conf
+    restorecon  /data/misc/wifi/softap.conf
+    restorecon  /data/misc/wifi/sockets
+    restorecon  /data/misc/wifi
+    restorecon_recursive /data/misc/wifi
+
+
+service dhcpcd_wlan0 /system/bin/dhcpcd -BKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_p2p /system/bin/dhcpcd -aABKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_bnep0 /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service dhcpcd_bt-pan /system/bin/dhcpcd -ABKL
+    class main
+    disabled
+    oneshot
+
+service iprenew_wlan0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_p2p /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service iprenew_bnep0 /system/bin/dhcpcd -n
+    class main
+    disabled
+    oneshot
+
+service macaddr /vendor/bin/mac_addr_normalization
+    class late_start
+    user root
+    group root bluetooth wifi
+    oneshot

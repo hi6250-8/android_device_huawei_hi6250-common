@@ -1,0 +1,40 @@
+on early-init
+
+on init
+
+on early-fs
+
+on fs
+
+on post-fs
+
+on post-fs-data
+
+on early-boot
+
+on boot
+
+## Property trigger
+#on property:ro.sample=*
+#    write /device/sample/sample_property ${ro.some_property}
+#    chmod 644 /device/sample/sample_device
+
+#regionalphone reset modem setting
+on property:sys.regional.resetmodem=1
+    exec - root -- chmod 666 /proc/ModemNv
+    write /proc/ModemNv abc
+    setprop persist.radio.current_version " "
+    exec - root -- chmod 660 /proc/ModemNv
+
+
+## Service definition
+#service sample /system/bin/sample
+#    class main
+#    user root
+#    group system log graphics
+#    socket sample stream 0660 system system
+#    disabled
+#    oneshot
+#    onrestart restart another_service
+
+

@@ -1,0 +1,26 @@
+on early-init
+
+on init
+
+on early-fs
+
+on fs
+
+on post-fs
+#	exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /vendor/lib/modules \
+#		test_a_ko.ko \
+#		test_b_ko.ko
+
+#	exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /odm/lib/modules \
+#		module_a.ko \
+#		module_b.ko
+
+	exec u:r:modprobe:s0 -- /system/bin/modprobe -a -d /vendor/lib/modules \
+		pn547.ko
+
+on post-fs-data
+
+on early-boot
+
+on boot
+
