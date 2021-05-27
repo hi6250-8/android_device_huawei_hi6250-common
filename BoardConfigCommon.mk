@@ -49,6 +49,10 @@ TARGET_HARDWARE_3D := true
 TARGET_USES_ION := true
 USE_OPENGL_RENDERER := true
 
+# HIDL
+DEVICE_MANIFEST_FILE += $(COMMON_PATH)/manifest.xml
+DEVICE_MATRIX_FILE := $(COMMON_PATH)/compatibility_matrix.xml
+
 # Hardware
 TARGET_SPECIFIC_HEADER_PATH := $(COMMON_PATH)/include
 
