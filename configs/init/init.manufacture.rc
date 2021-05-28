@@ -172,13 +172,6 @@ service fmd /vendor/bin/fmd
     group system log
     seclabel u:r:fmdserver:s0
 
-on property:sys.mount_patch=true
-    umount /patch_hw
-    remove_dm_device patch_hw
-    mkdir patch_hw
-    mount ext4 /dev/block/bootdevice/by-name/patch /patch_hw wait ro
-    setprop sys.mount_patch false
-
 service data_cleanner /system/bin/data_cleaner
     class core
     oneshot

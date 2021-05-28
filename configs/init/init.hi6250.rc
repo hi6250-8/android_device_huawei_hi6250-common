@@ -36,9 +36,6 @@ on early-boot
     group audio inet net_bt net_bt_admin net_bw_acct system
 
 on init
-    # Load persistent dm-verity state
-    verity_load_state
-
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
     chmod 664 /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
     chown system system /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
@@ -309,7 +306,6 @@ on charger
 
 on fs
     # mount mtd partitions
-    mkdir /patch_hw 0775 system system
     export ANDROID_STORAGE ""
     export EXTERNAL_STORAGE_DOCOMO /storage/sdcard1
 
@@ -324,7 +320,6 @@ on fs
     chown root root /sec_storage
     chmod 600 /sec_storage
 
-    mount_all_patch /patch_hw/fstab.patch_step1
     restorecon /splash2
     chmod 775 /splash2
     chown root system /splash2
@@ -414,9 +409,6 @@ on boot
 
     chown system system /sys/class/leds/lcd_backlight0/brightness
     chmod 644 /sys/class/leds/lcd_backlight0/brightness
-
-    chmod 755 /system/bin/busybox
-
 
 	#sensorhub
 	chown system system /dev/sensorhub

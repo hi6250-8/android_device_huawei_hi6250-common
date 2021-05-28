@@ -55,17 +55,11 @@ on charger
     chown system system /sys/class/hw_power/charger/charge_data/cca_charge_pattern
     chmod 0660 /sys/class/hw_power/charger/charge_data/cca_cccv_sample
     chown system system /sys/class/hw_power/charger/charge_data/cca_cccv_sample
-    trigger cust_parse_action
-    trigger load_system_props_action
     trigger charger-config-usb_gadget
     class_start charger
     wait /dev/block/bootdevice/by-name/oeminfo
     start oeminfo_nvm
     start teecd
-
-# /* adb reboot */
-on property:sys.powerctl=*
-   powerctl ${sys.powerctl}
 
 service ueventd /sbin/ueventd
     critical
@@ -97,12 +91,6 @@ on property:vold.decrypt=trigger_restart_framework
 
 on property:vold.decrypt=trigger_post_fs_data
     trigger post-fs-data
-
-on cust_parse_action
-    cust_parse
-
-on load_system_props_action
-    load_system_props
 
 #service vold /system/bin/vold \
 #        --blkid_context=u:r:blkid:s0 --blkid_untrusted_context=u:r:blkid_untrusted:s0 \

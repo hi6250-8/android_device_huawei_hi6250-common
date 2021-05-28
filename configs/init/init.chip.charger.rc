@@ -33,7 +33,6 @@ on charger
     start atcmdserver
     wait /dev/block/bootdevice/by-name/modem_fw
     mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw ro context=u:object_r:modem_fw_file:s0
-    modem_fs_chk 1024
 
 service limit_current /system/bin/limit_current -l
     user system

@@ -1,7 +1,6 @@
 on fs
 	wait /dev/block/bootdevice/by-name/modem_fw
 	mount ext4 /dev/block/bootdevice/by-name/modem_fw /modem_fw ro context=u:object_r:modem_fw_file:s0
-	modem_fs_chk 1024
 	chown radio radio sys/devices/platform/balong_power/state
 
 on data_ready
