@@ -6,7 +6,6 @@ type cust_file, file_type;
 type mnvmtwenty_file, file_type;
 type modemfw_file, file_type;
 type modemlog_file, file_type;
-type patchhw_file, file_type;
 type secstorage_file, file_type;
 type splashtwo_file, file_type;
 type version_file, file_type;

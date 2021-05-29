@@ -6,7 +6,6 @@
 /mnvm2:0(/.*)?			u:object_r:mnvmtwenty_file:s0
 /modem_fw(/.*)?			u:object_r:modemfw_file:s0
 /modem_log(/.*)?		u:object_r:modemlog_file:s0
-/patch_hw(/.*)?			u:object_r:patchhw_file:s0
 /sec_storage(/.*)?		u:object_r:secstorage_file:s0
 /splash2(/.*)?			u:object_r:splashtwo_file:s0
 /version(/.*)?			u:object_r:version_file:s0
