@@ -116,6 +116,7 @@ PRODUCT_PACKAGES += \
     init.device.rc \
     init.extmodem.rc \
     init.hi6250.rc \
+    init.hi6250.usb.rc \
     init.hisi.rc \
     init.ko.rc \
     init.manufacture.rc \
