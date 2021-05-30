@@ -49,6 +49,10 @@ PRODUCT_PACKAGES += \
     android.hardware.camera.provider@2.4-service \
     Snap
 
+# Debugging
+PRODUCT_PACKAGES += \
+    debug.rc
+
 # Display
 TARGET_SCREEN_DENSITY := 480
 TARGET_SCREEN_HEIGHT := 1920

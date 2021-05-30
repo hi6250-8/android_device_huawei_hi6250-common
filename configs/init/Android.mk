@@ -17,6 +17,13 @@
 LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
+LOCAL_MODULE := debug.rc
+LOCAL_SRC_FILES := debug.rc
+LOCAL_MODULE_CLASS := ETC
+LOCAL_MODULE_PATH := $(TARGET_OUT_VENDOR_ETC)/init
+include $(BUILD_PREBUILT)
+
+include $(CLEAR_VARS)
 LOCAL_MODULE := fstab.hi6250
 LOCAL_SRC_FILES := fstab.hi6250
 LOCAL_MODULE_CLASS := ETC
