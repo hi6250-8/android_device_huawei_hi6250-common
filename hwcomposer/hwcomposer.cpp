@@ -59,19 +59,6 @@
 #define DEBUG_LOG(x...) do {} while(0)
 #endif
 
-static void write_string(const char * path, const char * value) {
-    int fd = open(path, O_WRONLY);
-	if(!fd) { ALOGE("Unable to open to %s", path); return;}
-
-	unsigned long bytes_written = write(fd, value, strlen(value));
-
-	if (bytes_written < 1 || bytes_written < strlen(value)) {
-		ALOGE("Unable to write to %s : %lu",path, bytes_written);
-	}
-
-    close(fd);
-}
-
 static int hwc_device_open(const struct hw_module_t* module, const char* name,
         struct hw_device_t** device);
 
@@ -108,19 +95,6 @@ bool hwcHasApiVersion(const hwc_composer_device_1_t* hwc,
     return hwcApiVersion(hwc) >= (version & HARDWARE_API_VERSION_2_MAJ_MIN_MASK);
 }
 
-static void dump_layer(hwc_layer_1_t const* l) {
-    DEBUG_LOG("\ttype=%d, flags=%08x, handle=%p, tr=%02x, blend=%04x, {%d,%d,%d,%d}, {%d,%d,%d,%d}",
-            l->compositionType, l->flags, l->handle, l->transform, l->blending,
-            l->sourceCrop.left,
-            l->sourceCrop.top,
-            l->sourceCrop.right,
-            l->sourceCrop.bottom,
-            l->displayFrame.left,
-            l->displayFrame.top,
-            l->displayFrame.right,
-            l->displayFrame.bottom);
-}
-
 static int hwc_prepare(hwc_composer_device_1_t *,
         size_t numDisplays, hwc_display_contents_1_t** displays) {
     for(size_t j=0; j<numDisplays; j++) {
@@ -136,9 +110,6 @@ static int hwc_prepare(hwc_composer_device_1_t *,
 static int hwc_set(hwc_composer_device_1_t *,
         size_t numDisplays, hwc_display_contents_1_t** displays)
 {
-    /*for (size_t i=0 ; i<list->numHwLayers ; i++) {
-        dump_layer(&list->hwLayers[i]);
-    }*/
     for(size_t j=0; j<numDisplays; j++) {
 	EGLBoolean sucess = eglSwapBuffers((EGLDisplay)displays[j]->dpy,
 		(EGLSurface)displays[j]->sur);
