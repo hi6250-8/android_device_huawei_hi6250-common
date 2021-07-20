@@ -46,14 +46,6 @@
 #define NSEC_PER_SEC    1000000000L
 #define NSEC_PER_MSEC   1000000L
 
-#ifdef FAKE_VSYNC
-#ifndef REFRESH_RATE
-#define REFRESH_RATE (60.0)
-#endif // REFRESH_RATE
-#define REFRESH_PERIOD ((int64_t)(NSEC_PER_SEC / REFRESH_RATE))
-
-#endif // FAKE_VSYNC
-
 #define FB0_FILE "/dev/graphics/fb0"
 #define FB1_FILE "/dev/graphics/fb1"
 #define FB2_FILE "/dev/graphics/fb2"
@@ -433,24 +425,24 @@ static void hwc_register_procs(struct hwc_composer_device_1* dev,
     DEBUG_LOG("procs registered");
 }
 
-static int hwc_query(struct hwc_composer_device_1*, int what, int* value) {
-    DEBUG_LOG("query %d %d",what,*value);
-
-	int retval = 0;
-	switch (what) {
-	    case HWC_BACKGROUND_LAYER_SUPPORTED:
-		retval =0;
-		value = &retval;
-		break;
-	    case HWC_VSYNC_PERIOD:
-		retval = REFRESH_PERIOD;
-		value = &retval;
-		break;
-	    default:
-		ALOGE("Unknown query %d",what);
-		break;
+static int hwc_query(struct hwc_composer_device_1* dev, int what, int *value)
+{
+    hwc_context_t *ctx __unused = to_ctx(dev);
+    int refreshRate = 60;
+    switch (what) {
+    case HWC_BACKGROUND_LAYER_SUPPORTED:
+	value[0] = 1;
+	break;
+    case HWC_VSYNC_PERIOD:
+	*value = 1000000000 / refreshRate;
+	break;
+    case HWC_DISPLAY_TYPES_SUPPORTED:
+	*value = HWC_DISPLAY_PRIMARY_BIT;//Should be fine by now
+	break;
+    default:
+	return -EINVAL; //Unsupported
     }
-    return retval;
+    return 0;
 }
 
 static int hwc_device_close(struct hw_device_t *dev)
