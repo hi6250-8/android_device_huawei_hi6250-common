@@ -3,6 +3,40 @@
 
 #define to_ctx(dev) ((hwc_context_t *)dev)
 
+uint32_t hwcApiVersion(const hwc_composer_device_1_t* hwc);
+uint32_t hwcHeaderVersion(const hwc_composer_device_1_t* hwc);
+bool hwcHasApiVersion(const hwc_composer_device_1_t* hwc, uint32_t version);
+
+class KirinPrimaryDisplay;
+class KirinExternalDisplay;
+class KirinVirtualDisplay;
+
+class KirinDisplay {
+    public:
+        /* Methods */
+        KirinDisplay(int numMPPs);
+        KirinDisplay(uint32_t type, struct kirin_hwc_composer_device_1_t *pdev);
+        virtual ~KirinDisplay();
+};
+
+class KirinExternalDisplay : public KirinDisplay {
+    public:
+        /* Methods */
+        KirinExternalDisplay(struct kirin_hwc_composer_device_1_t *pdev);
+        ~KirinExternalDisplay();
+
+        virtual int getActiveConfig();
+        virtual int setActiveConfig(int index);
+};
+
+struct kirin_hwc_composer_device_1_t;
+
+struct kirin_hwc_composer_device_1_t {
+    hwc_composer_device_1_t base;
+    KirinExternalDisplay    *externalDisplay;
+    bool hdmi_hpd;
+};
+
 struct fb_ctx_t {
     int id;
     int available;

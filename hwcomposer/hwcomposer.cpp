@@ -101,6 +101,21 @@ hwc_module_t HAL_MODULE_INFO_SYM = {
 
 /*****************************************************************************/
 
+uint32_t hwcApiVersion(const hwc_composer_device_1_t* hwc) {
+    uint32_t hwcVersion = hwc->common.version;
+    return hwcVersion & HARDWARE_API_VERSION_2_MAJ_MIN_MASK;
+}
+
+uint32_t hwcHeaderVersion(const hwc_composer_device_1_t* hwc) {
+    uint32_t hwcVersion = hwc->common.version;
+    return hwcVersion & HARDWARE_API_VERSION_2_HEADER_MASK;
+}
+
+bool hwcHasApiVersion(const hwc_composer_device_1_t* hwc,
+        uint32_t version) {
+    return hwcApiVersion(hwc) >= (version & HARDWARE_API_VERSION_2_MAJ_MIN_MASK);
+}
+
 static void dump_layer(hwc_layer_1_t const* l) {
     DEBUG_LOG("\ttype=%d, flags=%08x, handle=%p, tr=%02x, blend=%04x, {%d,%d,%d,%d}, {%d,%d,%d,%d}",
             l->compositionType, l->flags, l->handle, l->transform, l->blending,
@@ -191,7 +206,7 @@ static void * vsync_thread(void * arg) {
 error:
    fb->vthread_running = 0;
    DEBUG_LOG("vsync thread exit");
-   return NULL; 
+   return NULL;
 
 }
 
@@ -323,14 +338,59 @@ static int hwc_getDisplayAttributes(struct hwc_composer_device_1* dev, int disp 
     return 0;
 }
 
-int hwc_getActiveConfig(struct hwc_composer_device_1* dev __unused, int disp __unused)
+int hwc_getActiveConfig(struct hwc_composer_device_1* dev, int disp)
 {
-    return 0;
+    struct kirin_hwc_composer_device_1_t *pdev =
+                   (struct kirin_hwc_composer_device_1_t *)dev;
+    if (disp == HWC_DISPLAY_PRIMARY)
+        return 0;
+    else if (disp == HWC_DISPLAY_EXTERNAL) {
+        if (pdev->hdmi_hpd) {
+                return  pdev->externalDisplay->getActiveConfig();
+        } else {
+            ALOGE("%s::External device is not connected", __func__);
+            return -1;
+        }
+    } else if (disp == HWC_DISPLAY_VIRTUAL)
+        return 0;
+    else {
+        ALOGE("%s:: unknown display type %u", __func__, disp);
+        return -EINVAL;
+    }
 }
 
-int hwc_setActiveConfig(struct hwc_composer_device_1* dev __unused, int disp __unused, int index __unused)
+int hwc_setActiveConfig(struct hwc_composer_device_1* dev, int disp, int index)
 {
-    return 0;
+    struct kirin_hwc_composer_device_1_t *pdev =
+                   (struct kirin_hwc_composer_device_1_t *)dev;
+    ALOGI("%s:: disp(%d), index(%d)", __func__, disp, index);
+    if (disp == HWC_DISPLAY_PRIMARY) {
+        if (index != 0) {
+            ALOGE("%s::Primary display doen't support index(%d)", __func__, index);
+            return -1;
+        }
+        return 0;
+    }
+    else if (disp == HWC_DISPLAY_EXTERNAL) {
+        if (pdev->hdmi_hpd) {
+            if (hwcHasApiVersion((hwc_composer_device_1_t*)dev, HWC_DEVICE_API_VERSION_1_4)) {
+                return pdev->externalDisplay->setActiveConfig(index);
+            } else {
+                if (index != 0) {
+                    ALOGE("%s::External display doen't support index(%d)", __func__, index);
+                    return -1;
+                } else {
+                    return 0;
+                }
+            }
+        } else {
+            ALOGE("%s::External device is not connected", __func__);
+            return -1;
+        }
+    } else if (disp == HWC_DISPLAY_VIRTUAL)
+        return 0;
+
+    return -1;
 }
 
 int hwc_setCursorPositionAsync(struct hwc_composer_device_1 *dev __unused, int disp __unused, int x_pos __unused, int y_pos __unused)
