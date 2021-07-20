@@ -1,7 +1,6 @@
 #
-# Meticulus hi6250 libhwcomposer
-# Copyright (c) 2017 Jonathan Dennis [Meticulus]
-#                               theonejohnnyd@gmail.com
+# Copyright (c) 2017 Jonathan Dennis [Meticulus] theonejohnnyd@gmail.com
+# Copyright (c) 2021 The LineageOS Project
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -23,15 +22,11 @@ LOCAL_PATH := $(call my-dir)
 # HAL module implemenation stored in
 # hw/<OVERLAY_HARDWARE_MODULE_ID>.<ro.product.board>.so
 include $(CLEAR_VARS)
-
 LOCAL_MODULE_RELATIVE_PATH := hw
-LOCAL_SHARED_LIBRARIES := libutils liblog libEGL
+LOCAL_SHARED_LIBRARIES := libutils liblog libEGL libhardware libcutils
 LOCAL_SRC_FILES := hwcomposer.cpp
-LOCAL_MODULE := hwcomposer.hi6250
+LOCAL_MODULE := hwcomposer.$(TARGET_BOARD_PLATFORM)
 LOCAL_MODULE_TAGS := optional
-
-#ifneq (,$(filter userdebug eng,$(TARGET_BUILD_VARIANT)))
 LOCAL_CFLAGS += -DDEBUG
-#endif
-
+LOCAL_VENDOR_MODULE := true
 include $(BUILD_SHARED_LIBRARY)

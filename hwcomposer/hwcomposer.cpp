@@ -1,7 +1,6 @@
 /*
- * Meticulus hi6250 libhwcomposer
- * Copyright (c) 2017 Jonathan Dennis [Meticulus]
- *                               theonejohnnyd@gmail.com
+ * Copyright (c) 2017 Jonathan Dennis [Meticulus] theonejohnnyd@gmail.com
+ * Copyright (c) 2021 The LineageOS Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,15 +29,17 @@
 #include <pthread.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#define LOG_TAG "Meticulus HWComposer"
+#define LOG_TAG "hwcomposer"
 #include <cutils/log.h>
 #include <cutils/atomic.h>
+#include <utils/Trace.h>
 
 #include <hardware/hwcomposer.h>
 
 #include <EGL/egl.h>
 
 #include "hisi_dss.h"
+#include "hwcomposer.h"
 /*****************************************************************************/
 #define FAKE_VSYNC
 
@@ -66,27 +67,6 @@
 #define DEBUG_LOG(x...) do {} while(0)
 #endif
 
-struct fb_ctx_t {
-    int id;
-    int available;
-    int fd;
-    int vsyncfd;
-    int vsync_on;
-    int vsync_stop;
-    int vthread_running;
-    int fake_vsync;
-    pthread_t vthread;
-    hwc_procs_t const *hwc_procs;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-};
-
-struct hwc_context_t {
-    hwc_composer_device_1_t device;
-    /* our private state goes below here */
-    fb_ctx_t disp[3];
-};
-
 static void write_string(const char * path, const char * value) {
     int fd = open(path, O_WRONLY);
 	if(!fd) { ALOGE("Unable to open to %s", path); return;}
@@ -113,8 +93,8 @@ hwc_module_t HAL_MODULE_INFO_SYM = {
         .version_major = 1,
         .version_minor = 0,
         .id = HWC_HARDWARE_MODULE_ID,
-        .name = "Meticulus HWComposer",
-        .author = "Meticulus Development",
+        .name = "Kirin Hardware Composer",
+        .author = "Meticulus",
         .methods = &hwc_module_methods,
     }
 };
@@ -134,7 +114,7 @@ static void dump_layer(hwc_layer_1_t const* l) {
             l->displayFrame.bottom);
 }
 
-static int hwc_prepare(hwc_composer_device_1_t *dev,
+static int hwc_prepare(hwc_composer_device_1_t *,
         size_t numDisplays, hwc_display_contents_1_t** displays) {
     for(size_t j=0; j<numDisplays; j++) {
 	if (displays && (displays[j]->flags & HWC_GEOMETRY_CHANGED)) {
@@ -146,7 +126,7 @@ static int hwc_prepare(hwc_composer_device_1_t *dev,
     return 0;
 }
 
-static int hwc_set(hwc_composer_device_1_t *dev,
+static int hwc_set(hwc_composer_device_1_t *,
         size_t numDisplays, hwc_display_contents_1_t** displays)
 {
     /*for (size_t i=0 ; i<list->numHwLayers ; i++) {
@@ -279,7 +259,111 @@ static int hwc_blank(struct hwc_composer_device_1* dev, int disp, int blank) {
     return ret;
 }
 
-static void register_procs(struct hwc_composer_device_1* dev,
+static int hwc_getDisplayConfigs(struct hwc_composer_device_1* dev, int disp,
+    uint32_t* configs, size_t* numConfigs) {
+
+    int ret = 0;
+    hwc_context_t* ctx __unused = to_ctx(dev);
+
+    if (*numConfigs == 0)
+	return 0;
+
+    switch(disp) {
+	case HWC_DISPLAY_PRIMARY:
+	    configs[0] = 0;
+	    *numConfigs = 1;
+
+	ret = 0;
+	break;
+	case HWC_DISPLAY_EXTERNAL:
+	    ret = -1;
+	break;
+    }
+    return ret;
+}
+
+static int hwc_getDisplayAttributes(struct hwc_composer_device_1* dev, int disp __unused,
+    uint32_t config __unused, const uint32_t* attributes, int32_t* values) {
+
+    hwc_context_t* ctx = to_ctx(dev);
+
+    static const uint32_t DISPLAY_ATTRIBUTES[] = {
+	HWC_DISPLAY_VSYNC_PERIOD,
+	HWC_DISPLAY_WIDTH,
+	HWC_DISPLAY_HEIGHT,
+	HWC_DISPLAY_DPI_X,
+	HWC_DISPLAY_DPI_Y,
+	HWC_DISPLAY_NO_ATTRIBUTE,
+	};
+
+    const int NUM_DISPLAY_ATTRIBUTES = (sizeof(DISPLAY_ATTRIBUTES) / sizeof(DISPLAY_ATTRIBUTES)[0]);
+
+    for (size_t i = 0; i < NUM_DISPLAY_ATTRIBUTES -1; ++i) {
+	switch (attributes[i]) {
+	case HWC_DISPLAY_VSYNC_PERIOD:
+	    values[i] = ctx->vinfo.vsync_len;
+	    break;
+	case HWC_DISPLAY_WIDTH:
+	    values[i] = ctx->vinfo.xres;
+	    break;
+	case HWC_DISPLAY_HEIGHT:
+	    values[i] = ctx->vinfo.yres;
+	    break;
+	case HWC_DISPLAY_DPI_X:
+	    values[i] = (int32_t) (ctx->xdpi * 1000);
+	    break;
+	case HWC_DISPLAY_DPI_Y:
+	    values[i] = (int32_t) (ctx->ydpi * 1000);
+	    break;
+	default:
+	    ALOGE("Unknown display attr: %d", attributes[i]);
+	    return  -EINVAL;
+	}
+    }
+    return 0;
+}
+
+int hwc_getActiveConfig(struct hwc_composer_device_1* dev __unused, int disp __unused)
+{
+    return 0;
+}
+
+int hwc_setActiveConfig(struct hwc_composer_device_1* dev __unused, int disp __unused, int index __unused)
+{
+    return 0;
+}
+
+int hwc_setCursorPositionAsync(struct hwc_composer_device_1 *dev __unused, int disp __unused, int x_pos __unused, int y_pos __unused)
+{
+    return 0;
+}
+
+static int hwc_setPowerMode(struct hwc_composer_device_1* dev, int disp __unused, int mode)
+{
+    ATRACE_CALL();
+    hwc_context_t* ctx = to_ctx(dev);
+    int ret = 0, value = 0;
+    ALOGD("%s: Setting mode %d", __func__, mode);
+    switch(mode) {
+	case HWC_POWER_MODE_OFF:
+	    value = FB_BLANK_POWERDOWN;
+	    break;
+	case HWC_POWER_MODE_DOZE:
+	case HWC_POWER_MODE_DOZE_SUSPEND:
+	    value = FB_BLANK_VSYNC_SUSPEND;
+	    break;
+	case HWC_POWER_MODE_NORMAL:
+	    value = FB_BLANK_UNBLANK;
+	    break;
+    }
+    if(ioctl(ctx->fb0, FBIOBLANK, value) < 0) {
+	ALOGE("%s: ioctl FBIOBLANK failed: %s %d", __func__, strerror(errno), value);
+	return -errno;
+    }
+ return ret;
+}
+
+static void hwc_register_procs(struct hwc_composer_device_1* dev,
             hwc_procs_t const* procs) {
     struct hwc_context_t *context = (hwc_context_t *)dev;
 
@@ -289,7 +373,7 @@ static void register_procs(struct hwc_composer_device_1* dev,
     DEBUG_LOG("procs registered");
 }
 
-static int query(struct hwc_composer_device_1* dev, int what, int* value) {
+static int hwc_query(struct hwc_composer_device_1*, int what, int* value) {
     DEBUG_LOG("query %d %d",what,*value);
 
 	int retval = 0;
@@ -299,7 +383,7 @@ static int query(struct hwc_composer_device_1* dev, int what, int* value) {
 		value = &retval;
 		break;
 	    case HWC_VSYNC_PERIOD:
-		retval = REFRESH_PERIOD;	
+		retval = REFRESH_PERIOD;
 		value = &retval;
 		break;
 	    default:
@@ -333,16 +417,23 @@ static int hwc_device_open(const struct hw_module_t* module, const char* name,
 
         /* initialize the procs */
         dev->device.common.tag = HARDWARE_DEVICE_TAG;
-        dev->device.common.version = HWC_DEVICE_API_VERSION_1_0;
+        dev->device.common.version = HWC_DEVICE_API_VERSION_1_4;
         dev->device.common.module = const_cast<hw_module_t*>(module);
         dev->device.common.close = hwc_device_close;
 
         dev->device.prepare = hwc_prepare;
         dev->device.set = hwc_set;
-        dev->device.blank = hwc_blank;
+//        dev->device.blank = hwc_blank;
         dev->device.eventControl = hwc_event_control;
-        dev->device.registerProcs = register_procs;
-        dev->device.query = query;
+        dev->device.registerProcs = hwc_register_procs;
+        dev->device.getDisplayConfigs = hwc_getDisplayConfigs;
+        dev->device.getDisplayAttributes = hwc_getDisplayAttributes;
+        dev->device.getActiveConfig = hwc_getActiveConfig;
+        dev->device.setActiveConfig = hwc_setActiveConfig;
+        dev->device.setCursorPositionAsync = hwc_setCursorPositionAsync;
+        dev->device.setPowerMode = hwc_setPowerMode;
+        dev->device.query = hwc_query;
+
 	/* init primary display */
 	dev->disp[HWC_DISPLAY_PRIMARY].vthread_running = 0;
 	dev->disp[HWC_DISPLAY_PRIMARY].vsync_on = 0;
