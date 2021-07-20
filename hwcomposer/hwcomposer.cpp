@@ -237,35 +237,6 @@ static int hwc_event_control (struct hwc_composer_device_1* dev, int disp,
 
 }
 
-static int hwc_blank(struct hwc_composer_device_1* dev, int disp, int blank) {
-    int ret = -1;
-    int fd = -1;
-    struct hwc_context_t *context = (hwc_context_t *)dev;
-
-    if(context->disp[disp].available) {
-	fd = context->disp[disp].fd;
-    } else
-	return -EINVAL;
-
-
-    if(fd > 0) {
-        ret = ioctl(fd, FBIOBLANK, blank ? FB_BLANK_NORMAL : FB_BLANK_UNBLANK);
-        if(ret)
-	    ALOGE("Could not %s framebuffer! on disp %d", blank ? "blank" : "unblank?", disp);
-
-    } else {
-	ALOGE("Somehow the fd on %d was invalid while %s ?", disp, blank ? "banking" : "unblanking");
-	return -EINVAL;
-    }
-
-    context->disp[disp].vsync_stop = blank;
-    context->disp[disp].vsync_on = blank ? 0 : 1;
-    signal_vsync_thread(&context->disp[disp]);
-
-    DEBUG_LOG("blank called %d",blank);
-    return ret;
-}
-
 static int hwc_getDisplayConfigs(struct hwc_composer_device_1* dev, int disp,
     uint32_t* configs, size_t* numConfigs) {
 
