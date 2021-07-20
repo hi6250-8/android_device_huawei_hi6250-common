@@ -60,7 +60,7 @@ struct hwc_context_t {
     struct fb_fix_screeninfo finfo;
     float xdpi = ((float)(vinfo.xres) * 25.4f) / (float)(vinfo.width);
     float ydpi = ((float)(vinfo.yres) * 25.4f) / (float)(vinfo.height);
-    fb_ctx_t disp[3];
+    fb_ctx_t disp[1];
 };
 
 #endif //HWC_H
